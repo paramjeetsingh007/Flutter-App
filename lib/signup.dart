@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpPage extends StatelessWidget {
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  Future<void> _saveUserDetails(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('fullName', fullNameController.text);
+    await prefs.setString('username', usernameController.text);
+    await prefs.setString('email', emailController.text);
+    await prefs.setString('password', passwordController.text);
+    await prefs.setBool('isLoggedIn', true); // Set login state to true
+
+    // Navigate to the home page after saving details
+    Navigator.pushReplacementNamed(context, '/login'); // Redirect to login page
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +58,10 @@ class SignUpPage extends StatelessWidget {
                       usernameController.text.isNotEmpty &&
                       emailController.text.isNotEmpty &&
                       passwordController.text.isNotEmpty) {
-                    
-                    // Navigate to the home page
-                    Navigator.pushReplacementNamed(context, '/home');
-                    
+
+                    // Save user details and navigate to the home page
+                    _saveUserDetails(context);
+
                     // Optionally, you can print the details in the console (for testing)
                     print('Full Name: ${fullNameController.text}');
                     print('Username: ${usernameController.text}');

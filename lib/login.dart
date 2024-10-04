@@ -1,15 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  Future<void> _login(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Retrieve stored email and password
+    String? storedEmail = prefs.getString('email');
+    String? storedPassword = prefs.getString('password');
+    bool? isLoggedIn = prefs.getBool('isLoggedIn'); // Check if user is already logged in
+
+    // If user is already logged in, navigate to home
+    if (isLoggedIn == true) {
+      Navigator.pushReplacementNamed(context, '/home');
+      return;
+    }
+
+    // Check if the entered email and password match the stored values
+    if (emailController.text == storedEmail && passwordController.text == storedPassword) {
+      // Navigate to the home page if credentials are correct
+      await prefs.setBool('isLoggedIn', true); // Set login state to true
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      // Show an error message if credentials are incorrect
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Error'),
+          content: Text('Invalid email or password.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Define your valid email and password
-    const String validEmail = 'p@gmail.com';
-    const String validPassword = '12345';
-
     return Scaffold(
       body: Center(
         child: Padding(
@@ -31,28 +65,7 @@ class LoginPage extends StatelessWidget {
               ),
               SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () {
-                  // Check if the entered email and password are correct
-                  if (emailController.text == validEmail && passwordController.text == validPassword) {
-                    // Navigate to the home page if credentials are correct
-                    Navigator.pushReplacementNamed(context, '/home');
-                  } else {
-                    // Show an error message if credentials are incorrect
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Error'),
-                        content: Text('Invalid email or password.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text('OK'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
+                onPressed: () => _login(context), // Call the login method
                 child: Text('Log In'),
               ),
               SizedBox(height: 16),
@@ -76,4 +89,3 @@ class LoginPage extends StatelessWidget {
     );
   }
 }
-
